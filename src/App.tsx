@@ -1,7 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { useGetProdutosQuery } from './services/api'
 import Header from './components/Header'
 import Produtos from './containers/Produtos'
-
+import { setProdutos, adicionarAoCarrinho, RootState } from './store'
+import { favoritar } from './store/reducers/favoritos'
 import { GlobalStyle } from './styles'
 
 export type Produto = {
@@ -12,44 +15,40 @@ export type Produto = {
 }
 
 function App() {
-  const [produtos, setProdutos] = useState<Produto[]>([])
-  const [carrinho, setCarrinho] = useState<Produto[]>([])
-  const [favoritos, setFavoritos] = useState<Produto[]>([])
+  const dispatch = useDispatch()
+  const carrinho = useSelector((state: RootState) => state.carrinho)
+  const favoritos = useSelector((state: RootState) => state.favoritos)
+  const { data: produtos, isLoading, isError } = useGetProdutosQuery()
 
   useEffect(() => {
-    fetch('https://fake-api-tau.vercel.app/api/ebac_sports')
-      .then((res) => res.json())
-      .then((res) => setProdutos(res))
-  }, [])
-
-  function adicionarAoCarrinho(produto: Produto) {
-    if (carrinho.find((p) => p.id === produto.id)) {
-      alert('Item já adicionado')
-    } else {
-      setCarrinho([...carrinho, produto])
+    if (produtos) {
+      dispatch(setProdutos(produtos))
     }
-  }
+  }, [produtos, dispatch])
 
-  function favoritar(produto: Produto) {
-    if (favoritos.find((p) => p.id === produto.id)) {
-      const favoritosSemProduto = favoritos.filter((p) => p.id !== produto.id)
-      setFavoritos(favoritosSemProduto)
-    } else {
-      setFavoritos([...favoritos, produto])
-    }
+  if (isError) {
+    return <div>Erro ao carregar produtos</div>
   }
 
   return (
     <>
       <GlobalStyle />
       <div className="container">
-        <Header favoritos={favoritos} itensNoCarrinho={carrinho} />
-        <Produtos
-          produtos={produtos}
-          favoritos={favoritos}
-          favoritar={favoritar}
-          adicionarAoCarrinho={adicionarAoCarrinho}
-        />
+        {isLoading ? (
+          <div>Carregando...</div>
+        ) : (
+          <>
+            <Header favoritos={favoritos} itensNoCarrinho={carrinho} />
+            <Produtos
+              produtos={produtos ?? []}
+              favoritos={favoritos}
+              favoritar={(produto: Produto) => dispatch(favoritar(produto))}
+              adicionarAoCarrinho={(produto: Produto) =>
+                dispatch(adicionarAoCarrinho(produto))
+              }
+            />
+          </>
+        )}
       </div>
     </>
   )
