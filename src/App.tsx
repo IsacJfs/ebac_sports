@@ -3,9 +3,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useGetProdutosQuery } from './services/api'
 import Header from './components/Header'
 import Produtos from './containers/Produtos'
-import { setProdutos, adicionarAoCarrinho, RootState } from './store'
+import { RootState } from './store'
 import { favoritar } from './store/reducers/favoritos'
 import { GlobalStyle } from './styles'
+import { setProdutos } from './store/reducers/protudos'
+import { adicionarAoCarrinho } from './store/reducers/carrinho'
 
 export type Produto = {
   id: number

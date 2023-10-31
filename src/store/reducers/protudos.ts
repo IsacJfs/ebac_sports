@@ -10,3 +10,4 @@ const produtosSlice = createSlice({
 })
 
 export const { setProdutos } = produtosSlice.actions
+export default produtosSlice.reducer
